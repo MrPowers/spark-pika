@@ -2,39 +2,39 @@ package com.github.mrpowers.spark.pika
 
 import org.scalatest.FunSpec
 
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.types.StringType
 
 import com.github.mrpowers.spark.fast.tests.DataFrameComparer
+import com.github.mrpowers.spark.daria.sql.SparkSessionExt._
 
 class TubularSpec
   extends FunSpec
   with SparkSessionWrapper
   with DataFrameComparer {
 
-  import spark.implicits._
-
   describe("withGoodVibes") {
 
     it("appends a chi column to a DataFrame") {
 
-      val sourceDF = List("sue", "fan").toDF("name")
+      val sourceDF = spark.createDF(
+        List(
+          "sue",
+          "fan"
+        ), List(
+          ("name", StringType, true)
+        )
+      )
 
       val actualDF = sourceDF.transform(Tubular.withGoodVibes())
 
-      val expectedSchema = List(
-        StructField("name", StringType, true),
-        StructField("chi", StringType, false)
-      )
-
-      val expectedData = List(
-        Row("sue", "happy"),
-        Row("fan", "happy")
-      )
-
-      val expectedDF = spark.createDataFrame(
-        spark.sparkContext.parallelize(expectedData),
-        StructType(expectedSchema)
+      val expectedDF = spark.createDF(
+        List(
+          ("sue", "happy"),
+          ("fan", "happy")
+        ), List(
+          ("name", StringType, true),
+          ("chi", StringType, false)
+        )
       )
 
       assertSmallDataFrameEquality(actualDF, expectedDF)
@@ -44,3 +44,4 @@ class TubularSpec
   }
 
 }
+
