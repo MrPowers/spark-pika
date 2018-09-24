@@ -4,13 +4,16 @@ version := "0.0.1"
 
 scalaVersion := "2.11.11"
 
-sparkVersion := "2.2.0"
-sparkComponents ++= Seq("sql")
+sparkVersion := "2.3.1"
 
-libraryDependencies += "MrPowers" % "spark-fast-tests" % "2.2.0_0.5.0" % "test"
+libraryDependencies += "mrpowers" % "spark-daria" % "2.3.1_0.24.0"
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.3.1" % "provided"
+libraryDependencies += "MrPowers" % "spark-fast-tests" % "2.3.1_0.15.0" % "test"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
-libraryDependencies += "mrpowers" % "spark-daria" % "2.2.0_0.12.0" % "test"
 
-artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-  artifact.name + "_" + sv.binary + "-" + sparkVersion.value + "_" + module.revision + "." + artifact.extension
-}
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+assemblyJarName in assembly := s"${name.value}_2.11-${sparkVersion.value}_${version.value}.jar"
+
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("com.github.mrpowers.spark.daria.**" -> "shadedSparkDariaForSparkPika.@1").inAll
+)
